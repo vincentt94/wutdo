@@ -1,0 +1,75 @@
+:root {
+    --color-background: #E2E2DC;  /* Main Background */
+    --color-secondary-bg: #BDC6C7; /* Secondary Background */
+    --color-accent-light: #E6CEA1; /* Accent/Highlight */
+    --color-accent-medium: #CCA770; /* Stronger Accent */
+    --color-accent-dark: #AF7A38; /* Text & Emphasis */
+  }
+
+
+/* Full screen container that centers everything */
+.signup-container {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    width:100%;
+    height: calc(75vh - 100px);
+    margin: 0;
+    background-size: cover; 
+    padding-top: 10px;
+  }
+  
+  /* The box containing the login form */
+  .signup-box {
+    width: 100%;
+    max-width: 400px;
+    height:400px;
+    text-align: center;
+    box-shadow: 0 4px 10px #AF7A38;
+    outline: 3px solid #AF7A38;
+    border-radius: 5px;
+    padding: 40px 30px;
+    
+  }
+  
+  /* Heading inside the login box */
+  .signup-box h2 {
+    font-size: 50px;
+    margin-bottom: 40px;
+    margin-top: 0px;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    font-size: 15px;
+    background-color: var(--color-background);
+    margin-bottom: 30px; 
+    border-radius: 3px;
+  }
+  
+  
+  /* Login button */
+  .login-button {
+    width: 50%;
+    padding: 12px;
+    background: var(--color-accent-dark);
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  .register-link {
+    font-size:18px;
+  }
+  
+  .register-link a {
+    color: black;
+    text-decoration: none;
+    font-size: 18px;
+    text-decoration: underline;
+  }
+  
