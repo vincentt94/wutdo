@@ -317,3 +317,18 @@
     font-family: inherit;
     font-size: 20px;
   }
+
+/*___________________________________________MY NOTES___________________________________________*/
+  
+  .note-wrapper button {
+    margin-top: 10px;
+    background: var(--color-accent-dark);
+    border: none;
+    color: black;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .note-wrapper button:hover {
+    background: var(--color-accent-medium);
+  }

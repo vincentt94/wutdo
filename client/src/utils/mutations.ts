@@ -45,3 +45,10 @@ export const UPLOAD_IMAGE = gql`
     uploadImage(file: $file)
   }
 `;
+
+//delete note mutation
+export const DELETE_NOTE = gql`
+  mutation DeleteNote($id: ID!) {
+    deleteNote(id: $id)
+  }
+`;

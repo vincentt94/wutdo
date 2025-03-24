@@ -46,6 +46,7 @@ const typeDefs = `
         login(input: LoginInput!): Auth
         addNote(title: String!, note: String!, imageUrl: String): Note!
         uploadImage(file: Upload!): String!
+        deleteNote(id: ID!): Boolean!
     }
 `;
 export default typeDefs;
