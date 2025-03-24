@@ -1,9 +1,9 @@
 import { useQuery } from "@apollo/client";
-import CreateNote from "./CreateNote";
-import JournalCard from "../components/JournalCard.tsx";
+import CreateNote from "./createnote";
+import JournalCard from "../components/journalcard.tsx";
 import { USER_NOTES } from "../utils/queries.js";
 
-interface Topic {
+interface Note {
     id: string;
     title: string;
     note: string;
@@ -26,11 +26,11 @@ export default function MyNotes() {
 
     return (
         <div>
-            <CreateNote onAddStory={refetch} />
+            <CreateNote onAddNote={refetch} />
             <h3>My Notes</h3>
             <div className="story-list">
-                {stories.length > 0 ? (
-                    stories.map((topic: Topic, index: number) => <JournalCard key={index} id = {story.id} title ={story.title} story = {story.story} imageUrl = {story.imageUrl} username={story.username} />)
+                {notes.length > 0 ? (
+                    notes.map((note: Note, index: number) => <JournalCard key={index} id = {note.id} title ={note.title} note = {note.note} imageUrl = {note.imageUrl} username={note.username} />)
                 ) : (
                     <p>No Notes found.</p>
                 )}

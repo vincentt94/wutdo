@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { type MouseEvent } from 'react';
 import Auth from '../utils/auth';
-import logo from '../assets/Logo.png'; 
+// import logo from '../assets/Logo.png'; 
 //NEED TO IMPORT A LOGO IMAGE INTO ASSETS FOLDER 
 
 
@@ -19,11 +19,13 @@ const Header = () => {
         
           <div className="header-content">
             <Link to="/" id="logoImg">
+            { /*
                 <img src={logo} alt="Travel Journal Logo"/>
+             */}
 
             </Link>
             <Link to="/">
-              <h1>Nomad Notebook</h1>
+              <h1>Wutdo</h1>
             </Link>
           </div>
         </div>
@@ -36,7 +38,7 @@ const Header = () => {
                 Home&nbsp;
               </Link>
               <Link to="/usertickets">
-                My Stories&nbsp;
+                My Notes&nbsp;
               </Link>
               <button id = "logoutButton" onClick={logout}>
                 Logout

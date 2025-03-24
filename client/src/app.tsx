@@ -8,8 +8,8 @@ import {
   import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
   import { Outlet } from "react-router-dom";
   
-  import Header from "./components/Header.tsx";
-  import Footer from "./components/Footer.tsx";
+  import Header from "./components/header.tsx";
+  import Footer from "./components/footer.tsx";
   
   /* OLD SETUP:
   const httpLink = createHttpLink({

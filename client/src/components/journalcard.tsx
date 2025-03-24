@@ -1,4 +1,3 @@
-import "../utils/journalcard.css"
 
 interface JournalCardProps {
     id?: string;

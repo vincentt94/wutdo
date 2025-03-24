@@ -120,6 +120,7 @@ export default function CreateNote({ onAddNote }: CreateNoteProps) {
                         marginBottom: "20px"
                     }}>
 
+                            {/* 
                         <label>Select an Image:</label>
                         <select value={selectedImage} onChange={(e) => setSelectedImage(e.target.value)}>
                             <option value="">-- Choose an image --</option>
@@ -129,6 +130,7 @@ export default function CreateNote({ onAddNote }: CreateNoteProps) {
                                 </option>
                             ))}
                         </select>
+                                    */}
                         {/*This allows the user to preview the image*/}
                         {selectedImage && <img src={selectedImage} alt="Selected" width="300px" />}
 
