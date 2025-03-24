@@ -40,8 +40,8 @@ export default function Home() {
                 ))}
             </div>
     
-            <Link to="/mystories">
-                <button className="create-story-button">Add Your Own Story</button>
+            <Link to="/mynotes">
+                <button className="create-story-button">Add a new note</button>
             </Link>
 
         

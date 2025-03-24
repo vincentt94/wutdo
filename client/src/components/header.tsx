@@ -37,7 +37,7 @@ const Header = () => {
               <Link to="/">
                 Home&nbsp;
               </Link>
-              <Link to="/usertickets">
+              <Link to="/mynotes">
                 My Notes&nbsp;
               </Link>
               <button id = "logoutButton" onClick={logout}>
