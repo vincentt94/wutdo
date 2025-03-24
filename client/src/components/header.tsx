@@ -25,7 +25,7 @@ const Header = () => {
 
             </Link>
             <Link to="/">
-              <h1>Nomad Notebook</h1>
+              <h1>Wutdo</h1>
             </Link>
           </div>
         </div>
@@ -38,7 +38,7 @@ const Header = () => {
                 Home&nbsp;
               </Link>
               <Link to="/usertickets">
-                My Stories&nbsp;
+                My Notes&nbsp;
               </Link>
               <button id = "logoutButton" onClick={logout}>
                 Logout

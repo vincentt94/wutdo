@@ -1,5 +1,5 @@
 import Note from "../models/note.js";
-import User from "../models/User.js";
+import User from "../models/user.js";
 import { signToken } from '../utils/auth.js';
 import bcrypt from "bcryptjs";
 import cloudinary from "../config/cloudinary.js";
@@ -13,7 +13,7 @@ const resolvers = {
             const notes = await Note.find().sort({ createdAt: -1 }).lean();
             // return await Story.find().sort({ createdAt: -1 });
             // Populate the username by looking up the userId in the User model
-            const populatedNotes = await Promise.all(notes.map(async (story) => {
+            const populatedNotes = await Promise.all(notes.map(async (note) => {
                 const user = await User.findById(note.userId);
                 return {
                     ...notes,
