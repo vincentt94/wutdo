@@ -40,7 +40,7 @@ const resolvers = {
             const populatedNotes = await Promise.all(notes.map(async (note) => {
                 const user = await User.findById(note.userId);
                 return {
-                    ...notes,
+                    ...note,
                     username: user ? user.username : "Unknown", // If user is not found, return "Unknown"
                 };
             }));

@@ -1,6 +1,6 @@
 
 interface JournalCardProps {
-    id?: string;
+    _id?: string;
     title: string;
     note: string;
     imageUrl?: string;
