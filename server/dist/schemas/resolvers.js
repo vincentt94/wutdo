@@ -75,6 +75,11 @@ const resolvers = {
             }
             const token = signToken(user.username, user._id);
             return { token, user };
+        },
+        deleteNote: async (_, { id }, context) => {
+            const result = await Note.deleteOne({ _id: id, userId: context.user._id });
+            // Return true if one document was deleted, false otherwise
+            return result.deletedCount === 1;
         }
     }
 };
