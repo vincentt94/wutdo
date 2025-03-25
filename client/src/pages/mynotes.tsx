@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import JournalCard from "../components/journalcard.tsx";
+import ConfirmationModal from "../components/confirmationmodal.tsx";
 import { USER_NOTES } from "../utils/queries.js";
 import { DELETE_NOTE } from "../utils/mutations";
 
@@ -22,21 +23,38 @@ export default function MyNotes() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const [deleteNote] = useMutation(DELETE_NOTE, {
-    onCompleted: () => refetch(),
+    onCompleted: () => {
+      refetch();
+      setNoteToDelete(null);
+    },
     onError: (error) => {
       console.error("Delete error:", error);
-      alert("Failed to delete note.");
+      alert("Failed to delete note."); // Optional: convert this to a modal later too
     },
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this note?")) {
-      await deleteNote({ variables: { id } });
-    }
+  const navigate = useNavigate();
+
+  const handleDeleteClick = (id: string) => {
+    setNoteToDelete(id);
+    setShowDeleteModal(true);
   };
 
-  const navigate = useNavigate();
+  const confirmDelete = async () => {
+    if (noteToDelete) {
+      await deleteNote({ variables: { id: noteToDelete } });
+    }
+    setShowDeleteModal(false);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setNoteToDelete(null);
+  };
 
   if (loading) return <p>Loading notes...</p>;
   if (error) return <p>Error loading notes: {error.message}</p>;
@@ -81,24 +99,27 @@ export default function MyNotes() {
                   style={{
                     marginRight: "10px",
                     padding: "6px 12px",
-                    backgroundColor: "#4285F4",
+                    backgroundColor: "#5F7A3E", // Olive green
                     color: "#fff",
                     border: "none",
                     borderRadius: "4px",
                     cursor: "pointer",
+                    fontWeight: "500",
                   }}
                 >
                   Edit
                 </button>
+
                 <button
-                  onClick={() => handleDelete(note._id)}
+                  onClick={() => handleDeleteClick(note._id)}
                   style={{
                     padding: "6px 12px",
-                    backgroundColor: "#EA4335",
+                    backgroundColor: "#A14C3A", // Warm muted red-brown
                     color: "#fff",
                     border: "none",
                     borderRadius: "4px",
                     cursor: "pointer",
+                    fontWeight: "500",
                   }}
                 >
                   Delete Note
@@ -110,6 +131,14 @@ export default function MyNotes() {
           <p style={{ textAlign: "center" }}>No Notes found.</p>
         )}
       </div>
+
+      {showDeleteModal && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this note?"
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
+      )}
     </div>
   );
 }
