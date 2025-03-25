@@ -39,6 +39,7 @@ const typeDefs = `
         getNotes: [Note!]!
         getUserNotes: [Note!]!
         getUsers: [User]!
+        getNoteById(id: ID!): Note
     }
 
     type Mutation {

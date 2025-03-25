@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "@apollo/client";
 import { useState } from "react";
-import CreateNote from "./createnote";
+import { useNavigate } from "react-router-dom";
+
 import JournalCard from "../components/journalcard.tsx";
 import { USER_NOTES } from "../utils/queries.js";
 import { DELETE_NOTE } from "../utils/mutations";
@@ -9,16 +10,17 @@ interface Note {
   _id: string;
   title: string;
   note: string;
-  imageUrls?: string[];  // 
+  imageUrls?: string[];
   username?: string;
 }
 
 export default function MyNotes() {
-  const { data, refetch } = useQuery(USER_NOTES);
-  const [editingNote, setEditingNote] = useState<Note | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const { data, loading, error, refetch } = useQuery(USER_NOTES, {
+    fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
+  });
 
-  
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [deleteNote] = useMutation(DELETE_NOTE, {
     onCompleted: () => refetch(),
@@ -34,6 +36,11 @@ export default function MyNotes() {
     }
   };
 
+  const navigate = useNavigate();
+
+  if (loading) return <p>Loading notes...</p>;
+  if (error) return <p>Error loading notes: {error.message}</p>;
+
   const notes = data?.getUserNotes ?? [];
 
   const filteredNotes = notes.filter((note: Note) =>
@@ -42,25 +49,20 @@ export default function MyNotes() {
 
   return (
     <div>
-      {editingNote ? (
-        <CreateNote
-          onAddNote={refetch}
-          noteToEdit={editingNote}
-          onFinishEdit={() => setEditingNote(null)}
-        />
-      ) : (
-        <CreateNote onAddNote={refetch} />
-      )}
+      <input
+        type="text"
+        placeholder="Search by title..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{
+          margin: "20px auto",
+          display: "block",
+          padding: "10px",
+          width: "300px",
+        }}
+      />
 
-<input
-  type="text"
-  placeholder="Search by title..."
-  value={searchTerm}
-  onChange={(e) => setSearchTerm(e.target.value)}
-  style={{ margin: "20px auto", display: "block", padding: "10px", width: "300px" }}
-/>
-
-      <h3>My Notes</h3>
+      <h3 style={{ textAlign: "center" }}>My Notes</h3>
 
       <div className="story-list">
         {filteredNotes.length > 0 ? (
@@ -70,15 +72,42 @@ export default function MyNotes() {
                 _id={note._id}
                 title={note.title}
                 note={note.note}
-                imageUrls={note.imageUrls} // 
+                imageUrls={note.imageUrls}
                 username={note.username}
               />
-              <button onClick={() => setEditingNote(note)}>Edit Note</button>
-              <button onClick={() => handleDelete(note._id)}>Delete Note</button>
+              <div style={{ marginTop: "10px" }}>
+                <button
+                  onClick={() => navigate(`/createnote/${note._id}`)}
+                  style={{
+                    marginRight: "10px",
+                    padding: "6px 12px",
+                    backgroundColor: "#4285F4",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(note._id)}
+                  style={{
+                    padding: "6px 12px",
+                    backgroundColor: "#EA4335",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete Note
+                </button>
+              </div>
             </div>
           ))
         ) : (
-          <p>No Notes found.</p>
+          <p style={{ textAlign: "center" }}>No Notes found.</p>
         )}
       </div>
     </div>

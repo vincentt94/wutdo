@@ -1,121 +1,113 @@
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
-import { useMutation } from "@apollo/client";
-import { ADD_NOTE, UPLOAD_IMAGE, UPDATE_NOTE, DELETE_NOTE } from "../utils/mutations";
+import { useMutation, useQuery } from "@apollo/client";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  ADD_NOTE,
+  UPLOAD_IMAGE,
+  UPDATE_NOTE,
+  DELETE_NOTE,
+} from "../utils/mutations"; // Make sure GET_NOTE_BY_ID is exported from mutations or queries
+import {GET_NOTE_BY_ID} from "../utils/queries";
 
-interface Note {
-  _id: string;
-  title: string;
-  note: string;
-  imageUrls?: string[];
-}
+export default function CreateNote() {
+  const { id: noteId } = useParams();
+  const navigate = useNavigate();
+  const isEditMode = Boolean(noteId);
 
-interface CreateNoteProps {
-  onAddNote: () => void;
-  noteToEdit?: Note;
-  onFinishEdit?: () => void;
-}
-
-export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: CreateNoteProps) {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
-  const [newImages, setNewImages] = useState<File[]>([]);
-  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
-  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [uploadImage] = useMutation(UPLOAD_IMAGE);
   const [addNote] = useMutation(ADD_NOTE);
   const [updateNote] = useMutation(UPDATE_NOTE);
   const [deleteNote] = useMutation(DELETE_NOTE);
 
-  // Pre-fill form if editing
-  useEffect(() => {
-    if (noteToEdit) {
-      setTitle(noteToEdit.title);
-      setNote(noteToEdit.note);
-      setExistingImages(noteToEdit.imageUrls || []);
-    }
-  }, [noteToEdit]);
+  const { data, loading } = useQuery(GET_NOTE_BY_ID, {
+    variables: { id: noteId },
+    skip: !isEditMode,
+  });
 
-  // Handle file input
+  useEffect(() => {
+    if (data?.getNoteById) {
+      const { title, note, imageUrls } = data.getNoteById;
+      setTitle(title);
+      setNote(note);
+      setImagePreviews(imageUrls || []);
+    }
+  }, [data]);
+
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setNewImages(prev => [...prev, ...files]);
-    const previews = files.map(file => URL.createObjectURL(file));
-    setNewImagePreviews(prev => [...prev, ...previews]);
+    setImages((prev) => [...prev, ...files]);
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews((prev) => [...prev, ...previews]);
   };
 
-  // Remove a newly added image
-  const handleRemoveNewImage = (index: number) => {
-    const updatedImages = [...newImages];
-    const updatedPreviews = [...newImagePreviews];
-    updatedImages.splice(index, 1);
-    updatedPreviews.splice(index, 1);
-    setNewImages(updatedImages);
-    setNewImagePreviews(updatedPreviews);
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Remove an existing image from noteToEdit
-  const handleRemoveExistingImage = (url: string) => {
-    setExistingImages(prev => prev.filter(img => img !== url));
-  };
-
-  // Delete note
   const handleDelete = async () => {
-    if (noteToEdit && confirm("Are you sure you want to delete this note?")) {
-      await deleteNote({ variables: { id: noteToEdit._id } });
-      onAddNote();
-      onFinishEdit?.();
+    if (noteId && confirm("Are you sure you want to delete this note?")) {
+      await deleteNote({ variables: { id: noteId } });
+      navigate("/mynotes");
     }
   };
 
-  // Submit (Create or Update)
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    let uploadedImageUrls: string[] = [];
 
-    let uploadedUrls: string[] = [];
-
-    for (const file of newImages) {
-      const { data } = await uploadImage({
-        variables: { file },
-        context: { headers: { "Apollo-Require-Preflight": "true" } },
-      });
-      uploadedUrls.push(data.uploadImage);
+    if (images.length > 0) {
+      for (const file of images) {
+        const response = await uploadImage({
+          variables: { file },
+          context: { headers: { "Apollo-Require-Preflight": "true" } },
+        });
+        uploadedImageUrls.push(response.data.uploadImage);
+      }
+    } else if (isEditMode && data?.getNoteById) {
+      uploadedImageUrls = data.getNoteById.imageUrls || [];
     }
 
-    const finalImageUrls = [...existingImages, ...uploadedUrls];
-
-    if (noteToEdit) {
+    if (isEditMode) {
       await updateNote({
         variables: {
-          _id: noteToEdit._id,
+          _id: noteId,
           title,
           note,
-          imageUrls: finalImageUrls,
+          imageUrls: uploadedImageUrls,
         },
       });
-      onFinishEdit?.();
+      navigate("/mynotes");
     } else {
       await addNote({
-        variables: {
-          title,
-          note,
-          imageUrls: finalImageUrls,
-        },
-      });
+        variables: { title, note, imageUrls: uploadedImageUrls },
+        refetchQueries: ["GetUserNotes"],
+            });
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        navigate("/mynotes");
+      }, 2000);
     }
 
-    onAddNote();
     setTitle("");
     setNote("");
-    setNewImages([]);
-    setNewImagePreviews([]);
-    setExistingImages([]);
+    setImages([]);
+    setImagePreviews([]);
   };
+
+  if (loading) return <p>Loading note...</p>;
 
   return (
     <div className="create-story-container">
       <div className="create-story-box">
-        <h1>{noteToEdit ? "Edit Note" : "Create Note"}</h1>
+        <h1>{isEditMode ? "Edit Note" : "Create Note"}</h1>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -139,14 +131,24 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
             multiple
           />
 
-          {/* Existing Images (in edit mode) */}
-          {existingImages.length > 0 && (
+          {(imagePreviews.length > 0) && (
             <div className="image-preview">
-              <h4>Current Images:</h4>
-              {existingImages.map((url, index) => (
-                <div key={index} style={{ position: "relative" }}>
-                  <img src={url} alt={`Existing ${index}`} style={{ maxWidth: "100%" }} />
-                  <button type="button" onClick={() => handleRemoveExistingImage(url)}>
+              {imagePreviews.map((url, index) => (
+                <div key={index} style={{ position: "relative", marginBottom: "10px" }}>
+                  <img src={url} alt={`Preview ${index}`} style={{ maxWidth: "100%", borderRadius: "5px" }} />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    style={{
+                      marginTop: "5px",
+                      background: "#AF7A38",
+                      border: "none",
+                      color: "white",
+                      padding: "6px 12px",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  >
                     Remove
                   </button>
                 </div>
@@ -154,39 +156,32 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
             </div>
           )}
 
-          {/* New Images */}
-          {newImagePreviews.length > 0 && (
-            <div className="image-preview">
-              <h4>New Uploads:</h4>
-              {newImagePreviews.map((url, index) => (
-                <div key={index} style={{ position: "relative" }}>
-                  <img src={url} alt={`Preview ${index}`} style={{ maxWidth: "100%" }} />
-                  <button type="button" onClick={() => handleRemoveNewImage(index)}>
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <input type="submit" value={isEditMode ? "Save Changes" : "Post Story"} />
 
-          <input type="submit" value={noteToEdit ? "Save Changes" : "Post Story"} />
-
-          {noteToEdit && (
-            <>
-              <button type="button" onClick={handleDelete} style={{ marginTop: "10px" }}>
-                Delete Note
-              </button>
-              <button
-                type="button"
-                onClick={onFinishEdit}
-                style={{ marginTop: "10px", marginLeft: "10px" }}
-              >
-                Cancel
-              </button>
-            </>
+          {isEditMode && (
+            <button type="button" onClick={handleDelete} style={{ marginTop: "10px" }}>
+              Delete Note
+            </button>
           )}
         </form>
       </div>
+
+      {showSuccessModal && (
+        <div className="modal-overlay">
+          <div
+            className="modal-content"
+            style={{
+              padding: "30px 40px",
+              borderRadius: "10px",
+              boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+              textAlign: "center",
+              zIndex: 1002,
+            }}
+          >
+            <h2 style={{ color: "#AF7A38" }}>Note created successfully!</h2>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

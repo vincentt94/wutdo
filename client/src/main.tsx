@@ -7,6 +7,7 @@ import SignUp from "./pages/signup.tsx";
 import Login from "./pages/login.tsx";
 import MyNotes from "./pages/mynotes.tsx";
 import ErrorPage from "./pages/errorpage.tsx"
+import CreateNote from "./pages/createnote.tsx";
 
 const router = createBrowserRouter([
     {
@@ -29,7 +30,15 @@ const router = createBrowserRouter([
             {
                 path: "/mynotes",
                 element: <MyNotes />,
-            }
+            },
+            {
+                path: "/createnote", // <-- for creating a new note
+                element: <CreateNote />,
+            },
+            {
+                path: "/createnote/:id", // <-- for editing a note
+                element: <CreateNote />,
+            },
         ],
     },
 ]);

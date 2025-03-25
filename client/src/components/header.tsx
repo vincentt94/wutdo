@@ -35,10 +35,13 @@ const Header = () => {
           {Auth.loggedIn() ? (
             <>
               <Link to="/">
-                Home&nbsp;
+                Home
               </Link>
               <Link to="/mynotes">
-                My Notes&nbsp;
+                My Notes
+              </Link>
+              <Link to="/createnote">
+                Create Note
               </Link>
               <button id = "logoutButton" onClick={logout}>
                 Logout
