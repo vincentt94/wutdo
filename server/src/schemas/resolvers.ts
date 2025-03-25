@@ -93,12 +93,14 @@ const resolvers = {
             const token = signToken(newUser.username, newUser._id);
             return { token, user: newUser };
         },
+        //add a new note 
         addNote: async (_: unknown, { title, note, imageUrl }: AddNoteArgs, context: any) => {
             console.log("saving note - Image URL:", imageUrl ) // debugging 
             const newNote = new Note({ title, note, imageUrl, userId: context.user._id });
             await newNote.save();
             return newNote;
         },
+        //allows login functionality via email
         login: async (_: unknown, { input }: LoginArgs) => {
             const user = await User.findOne({ email: input.email });
 
@@ -114,12 +116,24 @@ const resolvers = {
             const token = signToken(user.username, user._id);
             return { token, user };
         },
+
+        //delete a note
         deleteNote: async (_: unknown, { id }: { id: string }, context: any) => {
             const result = await Note.deleteOne({ _id: id, userId: context.user._id });
           
             // Return true if one document was deleted, false otherwise
             return result.deletedCount === 1;
-          }
+          },
+          //update a note 
+          updateNote: async (_: unknown, { _id, title, note, imageUrl }: any, context: any) => {
+            const updatedNote = await Note.findOneAndUpdate(
+              { _id, userId: context.user._id },
+              { title, note, imageUrl },
+              { new: true }
+            );
+            return updatedNote;
+          },
+
     }
 }
 

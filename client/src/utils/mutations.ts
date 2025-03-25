@@ -52,3 +52,15 @@ export const DELETE_NOTE = gql`
     deleteNote(id: $id)
   }
 `;
+
+//update note mutation
+export const UPDATE_NOTE = gql`
+  mutation UpdateNote($_id: ID!, $title: String, $note: String, $imageUrl: String) {
+    updateNote(_id: $_id, title: $title, note: $note, imageUrl: $imageUrl) {
+      _id
+      title
+      note
+      imageUrl
+    }
+  }
+`;
