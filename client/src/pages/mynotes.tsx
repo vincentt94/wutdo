@@ -9,13 +9,16 @@ interface Note {
   _id: string;
   title: string;
   note: string;
-  imageUrls?: string[];  // ✅ FIXED: was string, now an array
+  imageUrls?: string[];  // 
   username?: string;
 }
 
 export default function MyNotes() {
   const { data, refetch } = useQuery(USER_NOTES);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  
 
   const [deleteNote] = useMutation(DELETE_NOTE, {
     onCompleted: () => refetch(),
@@ -33,6 +36,10 @@ export default function MyNotes() {
 
   const notes = data?.getUserNotes ?? [];
 
+  const filteredNotes = notes.filter((note: Note) =>
+    note.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div>
       {editingNote ? (
@@ -45,11 +52,19 @@ export default function MyNotes() {
         <CreateNote onAddNote={refetch} />
       )}
 
+<input
+  type="text"
+  placeholder="Search by title..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  style={{ margin: "20px auto", display: "block", padding: "10px", width: "300px" }}
+/>
+
       <h3>My Notes</h3>
 
       <div className="story-list">
-        {notes.length > 0 ? (
-          notes.map((note: Note) => (
+        {filteredNotes.length > 0 ? (
+          filteredNotes.map((note: Note) => (
             <div key={note._id} className="note-wrapper">
               <JournalCard
                 _id={note._id}
