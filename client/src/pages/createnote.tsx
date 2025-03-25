@@ -8,6 +8,7 @@ import {
   DELETE_NOTE,
 } from "../utils/mutations";
 import { GET_NOTE_BY_ID } from "../utils/queries";
+import ConfirmationModal from "../components/confirmationmodal";
 
 export default function CreateNote() {
   const { id: noteId } = useParams();
@@ -22,6 +23,7 @@ export default function CreateNote() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [uploadImage] = useMutation(UPLOAD_IMAGE);
   const [addNote] = useMutation(ADD_NOTE);
@@ -63,8 +65,13 @@ export default function CreateNote() {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleDelete = async () => {
-    if (noteId && confirm("Are you sure you want to delete this note?")) {
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setShowDeleteModal(false);
+    if (noteId) {
       await deleteNote({ variables: { id: noteId } });
       navigate("/mynotes");
     }
@@ -184,7 +191,7 @@ export default function CreateNote() {
           {isEditMode && (
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
               style={{ marginTop: "10px" }}
             >
               Delete Note
@@ -208,6 +215,14 @@ export default function CreateNote() {
             <h2 style={{ color: "#AF7A38" }}>Note created successfully!</h2>
           </div>
         </div>
+      )}
+
+      {showDeleteModal && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this note?"
+          onConfirm={confirmDelete}
+          onCancel={() => setShowDeleteModal(false)}
+        />
       )}
     </div>
   );
