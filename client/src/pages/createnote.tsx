@@ -70,7 +70,18 @@ export default function CreateNote({ onAddNote }: CreateNoteProps) {
                         context: { headers: { "Apollo-Require-Preflight": "true" } } 
                     },
                 );
-                imageUrl = response.data.uploadImage;
+
+
+                 /* 
+                //resizing image upload
+                const OriginalUrl = response.data.uploadImage;
+
+                const resizedUrl = OriginalUrl.replace("/upload", "/upload/w_400,h_300,c_fill/");
+
+                imageUrl = resizedUrl; 
+                */
+               
+               imageUrl = response.data.uploadImage;
             } catch (error) {
                 console.error("Image upload failed:", error);
                 alert("Failed to upload image.");
