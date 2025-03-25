@@ -47,6 +47,7 @@ const typeDefs = `
         addNote(title: String!, note: String!, imageUrl: String): Note!
         uploadImage(file: Upload!): String!
         deleteNote(id: ID!): Boolean!
+        updateNote(_id: ID!, title: String, note: String, imageUrl: String): Note!
     }
 `;
 export default typeDefs;

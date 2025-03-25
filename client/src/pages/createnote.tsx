@@ -1,173 +1,142 @@
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { useMutation } from "@apollo/client";
+import { ADD_NOTE, UPLOAD_IMAGE, UPDATE_NOTE, DELETE_NOTE } from "../utils/mutations";
 
-import { ADD_NOTE, UPLOAD_IMAGE } from "../utils/mutations.js";
-
-
-interface CreateNoteProps {
-    onAddNote: () => void; // No parameters needed, just triggers refetch
+interface Note {
+  _id: string;
+  title: string;
+  note: string;
+  imageUrl?: string;
 }
 
-export default function CreateNote({ onAddNote }: CreateNoteProps) {
-    const [title, setTitle] = useState("");
-    const [note, setNote] = useState("");
-    const [image, setImage] = useState<File | undefined | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [selectedImage, setSelectedImage] = useState(""); //  Track selected predefined image
+interface CreateNoteProps {
+  onAddNote: () => void;
+  noteToEdit?: Note;
+  onFinishEdit?: () => void;
+}
 
-    const [uploadImage] = useMutation(UPLOAD_IMAGE);
+export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: CreateNoteProps) {
+  const [title, setTitle] = useState("");
+  const [note, setNote] = useState("");
+  const [image, setImage] = useState<File | undefined | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const [addNote, { loading, error }] = useMutation(ADD_NOTE, {
-        onCompleted: () => {
-            onAddNote();
-            setTitle("");
-            setNote("");
-            setImage(null);
-            setImagePreview(null);
-            setSelectedImage("");
+  const [uploadImage] = useMutation(UPLOAD_IMAGE);
+  const [addNote] = useMutation(ADD_NOTE);
+  const [updateNote] = useMutation(UPDATE_NOTE);
+  const [deleteNote] = useMutation(DELETE_NOTE);
+
+  useEffect(() => {
+    if (noteToEdit) {
+      setTitle(noteToEdit.title);
+      setNote(noteToEdit.note);
+      setImagePreview(noteToEdit.imageUrl || null);
+    }
+  }, [noteToEdit]);
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setImage(file);
+    setImagePreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview(null);
+  };
+
+  const handleDelete = async () => {
+    if (noteToEdit && confirm("Are you sure you want to delete this note?")) {
+      await deleteNote({ variables: { id: noteToEdit._id } });
+      onAddNote();
+      onFinishEdit?.();
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    let imageUrl = imagePreview || "";
+
+    // Upload image if changed
+    if (image) {
+      const response = await uploadImage({
+        variables: { file: image },
+        context: { headers: { "Apollo-Require-Preflight": "true" } },
+      });
+      imageUrl = response.data.uploadImage;
+    }
+
+    if (noteToEdit) {
+      await updateNote({
+        variables: {
+          _id: noteToEdit._id,
+          title,
+          note,
+          imageUrl,
         },
-        onError: (err) => {
-            console.error("Error adding note:", err);
-            alert("Failed to submit note.");
-        },
-    });
-
-    //stock images in an array
-    /* Can update / remove these as no images are added in yet/ might not be needed
-    const imageOptions = [
-        { label: "City", value: "/assets/cityvibes.webp", },
-        { label: "Forest", value: "/assets/forestvibes.avif" },
-        { label: "Island", value: "/assets/Islandvibes.webp" },
-        { label: "Lake", value: "/assets/lakevibes.jpg" },
-        { label: "Mountain", value: "/assets/mountainvibes.jpg" },
-        { label: "River", value: "/assets/rivervibes.jpg" },
-        { label: "Suburbs", value: "/assets/surburbanvibes.jpg" },
-    ]; */
- 
-    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        setImage(file)
-        const urlPreview = file ? URL.createObjectURL(file) : null;
-        setImagePreview(urlPreview);
-        setSelectedImage(""); //clears selected stock image 
-
+      });
+      onFinishEdit?.();
+    } else {
+      await addNote({
+        variables: { title, note, imageUrl },
+      });
     }
 
-    const handleRemoveImage = () => {
-        setImage(null)
-        setImagePreview(null)
-    }
+    onAddNote();
+    setTitle("");
+    setNote("");
+    setImage(null);
+    setImagePreview(null);
+  };
 
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-        let imageUrl = "";
-        if (image) {
-            try {
-                console.log(image);
-                const response = await uploadImage(
-                    { 
-                        variables: { file: image }, 
-                        context: { headers: { "Apollo-Require-Preflight": "true" } } 
-                    },
-                );
+  return (
+    <div className="create-story-container">
+      <div className="create-story-box">
+        <h1>{noteToEdit ? "Edit Note" : "Create Note"}</h1>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Topic Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+          <textarea
+            placeholder="Write Your Notes Here..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            required
+          />
 
+          <label>Choose a picture to upload:</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            multiple={false}
+          />
 
-                 /* 
-                //resizing image upload
-                const OriginalUrl = response.data.uploadImage;
-
-                const resizedUrl = OriginalUrl.replace("/upload", "/upload/w_400,h_300,c_fill/");
-
-                imageUrl = resizedUrl; 
-                */
-               
-               imageUrl = response.data.uploadImage;
-            } catch (error) {
-                console.error("Image upload failed:", error);
-                alert("Failed to upload image.");
-                return;
-            }
-        }
-        else {
-            imageUrl = selectedImage || "";
-        }
-        // create post and send to database
-        addNote({
-            variables: {
-                title,
-                note,
-                imageUrl: imageUrl
-            },
-        });
-    }
-
-    return (
-        <div className="create-story-container">
-            <div className="create-story-box">
-                <h1>Create Note</h1>
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <input
-                            type="text"
-                            placeholder="Topic Title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <textarea
-                            placeholder="Write Your Notes Here..."
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                            required
-                        />
-                    </div>
-                    {/*Here we can select an image from a list*/}
-                    <div style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        marginBottom: "20px"
-                    }}>
-
-                            {/* 
-                        <label>Select an Image:</label>
-                        <select value={selectedImage} onChange={(e) => setSelectedImage(e.target.value)}>
-                            <option value="">-- Choose an image --</option>
-                            {imageOptions.map((image, index) => (
-                                <option key={index} value={image.value}>
-                                    {image.label}
-                                </option>
-                            ))}
-                        </select>
-                                    */}
-                        {/*This allows the user to preview the image*/}
-                        {selectedImage && <img src={selectedImage} alt="Selected" width="300px" />}
-
-                        {/*Here is where we can allow the user to upload an image of their choice*/}
-                        <div>
-                            <label>Choose a picture to upload:</label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                multiple={false}
-                            />
-                        </div>
-                    </div>
-                    {imagePreview && (
-                        <div className="image-preview">
-                            <img src={imagePreview} alt="Preview" />
-                            <button onClick={handleRemoveImage}>Remove Image</button>
-                        </div>
-                    )}
-                    <input type="submit" value="Post Story" />
-                    {loading && <p>Submitting note...</p>}
-                    {error && <p>Issue submitting note.</p>}
-                </form>
+          {imagePreview && (
+            <div className="image-preview">
+              <img src={imagePreview} alt="Preview" />
+              <button type="button" onClick={handleRemoveImage}>Remove Image</button>
             </div>
-        </div>
-    );
+          )}
 
+          <input type="submit" value={noteToEdit ? "Save Changes" : "Post Story"} />
+
+          {noteToEdit && (
+            <>
+              <button type="button" onClick={handleDelete} style={{ marginTop: "10px" }}>
+                Delete Note
+              </button>
+              <button type="button" onClick={onFinishEdit} style={{ marginTop: "10px", marginLeft: "10px" }}>
+                Cancel
+              </button>
+            </>
+          )}
+        </form>
+      </div>
+    </div>
+  );
 }
