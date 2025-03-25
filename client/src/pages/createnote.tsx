@@ -6,8 +6,8 @@ import {
   UPLOAD_IMAGE,
   UPDATE_NOTE,
   DELETE_NOTE,
-} from "../utils/mutations"; // Make sure GET_NOTE_BY_ID is exported from mutations or queries
-import {GET_NOTE_BY_ID} from "../utils/queries";
+} from "../utils/mutations";
+import { GET_NOTE_BY_ID } from "../utils/queries";
 
 export default function CreateNote() {
   const { id: noteId } = useParams();
@@ -16,8 +16,11 @@ export default function CreateNote() {
 
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
-  const [images, setImages] = useState<File[]>([]);
+
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [uploadImage] = useMutation(UPLOAD_IMAGE);
@@ -35,19 +38,28 @@ export default function CreateNote() {
       const { title, note, imageUrls } = data.getNoteById;
       setTitle(title);
       setNote(note);
+      setExistingImageUrls(imageUrls || []);
       setImagePreviews(imageUrls || []);
     }
   }, [data]);
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setImages((prev) => [...prev, ...files]);
+    setNewImages((prev) => [...prev, ...files]);
     const previews = files.map((file) => URL.createObjectURL(file));
     setImagePreviews((prev) => [...prev, ...previews]);
   };
 
   const handleRemoveImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+    const urlToRemove = imagePreviews[index];
+
+    if (existingImageUrls.includes(urlToRemove)) {
+      setExistingImageUrls((prev) => prev.filter((url) => url !== urlToRemove));
+    } else {
+      const adjustedIndex = index - existingImageUrls.length;
+      setNewImages((prev) => prev.filter((_, i) => i !== adjustedIndex));
+    }
+
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -62,17 +74,17 @@ export default function CreateNote() {
     e.preventDefault();
     let uploadedImageUrls: string[] = [];
 
-    if (images.length > 0) {
-      for (const file of images) {
+    if (newImages.length > 0) {
+      for (const file of newImages) {
         const response = await uploadImage({
           variables: { file },
           context: { headers: { "Apollo-Require-Preflight": "true" } },
         });
         uploadedImageUrls.push(response.data.uploadImage);
       }
-    } else if (isEditMode && data?.getNoteById) {
-      uploadedImageUrls = data.getNoteById.imageUrls || [];
     }
+
+    const finalImageUrls = [...existingImageUrls, ...uploadedImageUrls];
 
     if (isEditMode) {
       await updateNote({
@@ -80,15 +92,15 @@ export default function CreateNote() {
           _id: noteId,
           title,
           note,
-          imageUrls: uploadedImageUrls,
+          imageUrls: finalImageUrls,
         },
       });
       navigate("/mynotes");
     } else {
       await addNote({
-        variables: { title, note, imageUrls: uploadedImageUrls },
+        variables: { title, note, imageUrls: finalImageUrls },
         refetchQueries: ["GetUserNotes"],
-            });
+      });
       setShowSuccessModal(true);
       setTimeout(() => {
         setShowSuccessModal(false);
@@ -98,7 +110,8 @@ export default function CreateNote() {
 
     setTitle("");
     setNote("");
-    setImages([]);
+    setNewImages([]);
+    setExistingImageUrls([]);
     setImagePreviews([]);
   };
 
@@ -131,11 +144,18 @@ export default function CreateNote() {
             multiple
           />
 
-          {(imagePreviews.length > 0) && (
+          {imagePreviews.length > 0 && (
             <div className="image-preview">
               {imagePreviews.map((url, index) => (
-                <div key={index} style={{ position: "relative", marginBottom: "10px" }}>
-                  <img src={url} alt={`Preview ${index}`} style={{ maxWidth: "100%", borderRadius: "5px" }} />
+                <div
+                  key={index}
+                  style={{ position: "relative", marginBottom: "10px" }}
+                >
+                  <img
+                    src={url}
+                    alt={`Preview ${index}`}
+                    style={{ maxWidth: "100%", borderRadius: "5px" }}
+                  />
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(index)}
@@ -146,7 +166,7 @@ export default function CreateNote() {
                       color: "white",
                       padding: "6px 12px",
                       borderRadius: "4px",
-                      cursor: "pointer"
+                      cursor: "pointer",
                     }}
                   >
                     Remove
@@ -156,10 +176,17 @@ export default function CreateNote() {
             </div>
           )}
 
-          <input type="submit" value={isEditMode ? "Save Changes" : "Post Story"} />
+          <input
+            type="submit"
+            value={isEditMode ? "Save Changes" : "Post Story"}
+          />
 
           {isEditMode && (
-            <button type="button" onClick={handleDelete} style={{ marginTop: "10px" }}>
+            <button
+              type="button"
+              onClick={handleDelete}
+              style={{ marginTop: "10px" }}
+            >
               Delete Note
             </button>
           )}
