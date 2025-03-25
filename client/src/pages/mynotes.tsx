@@ -9,7 +9,7 @@ interface Note {
   _id: string;
   title: string;
   note: string;
-  imageUrl?: string;
+  imageUrls?: string[];  // ✅ FIXED: was string, now an array
   username?: string;
 }
 
@@ -35,7 +35,6 @@ export default function MyNotes() {
 
   return (
     <div>
-      {/* Show Create or Edit Form */}
       {editingNote ? (
         <CreateNote
           onAddNote={refetch}
@@ -56,7 +55,7 @@ export default function MyNotes() {
                 _id={note._id}
                 title={note.title}
                 note={note.note}
-                imageUrl={note.imageUrl}
+                imageUrls={note.imageUrls} // 
                 username={note.username}
               />
               <button onClick={() => setEditingNote(note)}>Edit Note</button>

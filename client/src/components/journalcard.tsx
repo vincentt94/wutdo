@@ -4,20 +4,21 @@ interface JournalCardProps {
   _id?: string;
   title: string;
   note: string;
-  imageUrl?: string;
+  imageUrls?: string[];
   username?: string;
 }
 
-export default function JournalCard({ title, note, imageUrl, username }: JournalCardProps) {
-  const [showFullImage, setShowFullImage] = useState(false);
 
-  const resizedUrl = imageUrl?.replace("/upload/", "/upload/w_400,h_300,c_fill/");
 
-  const handleOverlayClick = () => setShowFullImage(false);
+
+export default function JournalCard({ title, note, imageUrls = [], username }: JournalCardProps) {
+  const [showFullImage, setShowFullImage] = useState<string | null>(null);
+
+  const handleOverlayClick = () => setShowFullImage(null);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setShowFullImage(false);
+      if (e.key === "Escape") setShowFullImage(null);
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
@@ -26,15 +27,20 @@ export default function JournalCard({ title, note, imageUrl, username }: Journal
   return (
     <>
       <div className="journal-card">
-        {imageUrl && (
-          <img
-            src={resizedUrl}
-            alt={title}
-            className="journal-image"
-            onClick={() => setShowFullImage(true)}
-            style={{ cursor: "pointer" }}
-          />
-        )}
+        {imageUrls?.map((url, index) => {
+          const resizedUrl = url.replace("/upload/", "/upload/w_400,h_300,c_fill/");
+          return (
+            <img
+              key={index}
+              src={resizedUrl}
+              alt={`Note Image ${index}`}
+              className="journal-image"
+              onClick={() => setShowFullImage(url)}
+              style={{ cursor: "pointer", marginBottom: "10px" }}
+            />
+          );
+        })}
+
         <div className="journal-content">
           <h2 className="journal-title">{title}</h2>
           {username && <p className="journal-author">By: {username}</p>}
@@ -45,7 +51,6 @@ export default function JournalCard({ title, note, imageUrl, username }: Journal
       {showFullImage && (
         <div className="modal-overlay" onClick={handleOverlayClick}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ position: "relative" }}>
-            {/* ✖ Close Button */}
             <button
               onClick={handleOverlayClick}
               style={{
@@ -65,7 +70,7 @@ export default function JournalCard({ title, note, imageUrl, username }: Journal
             </button>
 
             <img
-              src={imageUrl}
+              src={showFullImage}
               alt="Full Size"
               className="modal-image"
               onDragStart={(e) => e.preventDefault()}

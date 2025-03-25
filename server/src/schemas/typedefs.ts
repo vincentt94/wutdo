@@ -5,7 +5,7 @@ const typeDefs = `
         _id: ID!
         title: String!
         note: String!
-        imageUrl: String
+        imageUrls: [String]
         userId: ID!
         username: String
         createdAt: String
@@ -44,10 +44,10 @@ const typeDefs = `
     type Mutation {
         addUser(input: UserInput!): Auth
         login(input: LoginInput!): Auth
-        addNote(title: String!, note: String!, imageUrl: String): Note!
+        addNote(title: String!, note: String!, imageUrls: [String]): Note!
         uploadImage(file: Upload!): String!
         deleteNote(id: ID!): Boolean!
-        updateNote(_id: ID!, title: String, note: String, imageUrl: String): Note!
+        updateNote(_id: ID!, title: String, note: String, imageUrls: [String]): Note!
     }
 `
 export default typeDefs
