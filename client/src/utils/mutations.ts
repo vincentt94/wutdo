@@ -28,13 +28,12 @@ export const LOGIN_USER = gql`
 
 // Note mutation
 export const ADD_NOTE = gql`
-  mutation AddNote($title: String!, $note: String!, $imageUrl: String) {
-    addNote(title: $title, note: $note, imageUrl: $imageUrl) {
+  mutation AddNote($title: String!, $note: String!, $imageUrls: [String!]) {
+    addNote(title: $title, note: $note, imageUrls: $imageUrls) {
       _id
       title
       note
-      imageUrl
-      userId
+      imageUrls
     }
   }
 `;
@@ -55,12 +54,12 @@ export const DELETE_NOTE = gql`
 
 //update note mutation
 export const UPDATE_NOTE = gql`
-  mutation UpdateNote($_id: ID!, $title: String, $note: String, $imageUrl: String) {
-    updateNote(_id: $_id, title: $title, note: $note, imageUrl: $imageUrl) {
+  mutation UpdateNote($_id: ID!, $title: String!, $note: String!, $imageUrls: [String!]) {
+    updateNote(_id: $_id, title: $title, note: $note, imageUrls: $imageUrls) {
       _id
       title
       note
-      imageUrl
+      imageUrls
     }
   }
 `;

@@ -6,7 +6,7 @@ interface Note {
   _id: string;
   title: string;
   note: string;
-  imageUrl?: string;
+  imageUrls?: string[];
 }
 
 interface CreateNoteProps {
@@ -18,8 +18,8 @@ interface CreateNoteProps {
 export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: CreateNoteProps) {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
-  const [image, setImage] = useState<File | undefined | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [images, setImages] = useState<(File | null)[]>([null]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const [uploadImage] = useMutation(UPLOAD_IMAGE);
   const [addNote] = useMutation(ADD_NOTE);
@@ -30,19 +30,35 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
     if (noteToEdit) {
       setTitle(noteToEdit.title);
       setNote(noteToEdit.note);
-      setImagePreview(noteToEdit.imageUrl || null);
+      setImagePreviews(noteToEdit.imageUrls || []);
+      setImages(noteToEdit.imageUrls?.map(() => null) || [null]);
     }
   }, [noteToEdit]);
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files?.[0];
-    setImage(file);
-    setImagePreview(file ? URL.createObjectURL(file) : null);
+    if (!file) return;
+
+    const updatedImages = [...images];
+    updatedImages[index] = file;
+
+    const updatedPreviews = [...imagePreviews];
+    updatedPreviews[index] = URL.createObjectURL(file);
+
+    // Add a new empty field only if it's the last one
+    if (index === images.length - 1) {
+      updatedImages.push(null);
+    }
+
+    setImages(updatedImages);
+    setImagePreviews(updatedPreviews);
   };
 
-  const handleRemoveImage = () => {
-    setImage(null);
-    setImagePreview(null);
+  const handleRemoveImage = (index: number) => {
+    const updatedImages = images.filter((_, i) => i !== index);
+    const updatedPreviews = imagePreviews.filter((_, i) => i !== index);
+    setImages(updatedImages);
+    setImagePreviews(updatedPreviews);
   };
 
   const handleDelete = async () => {
@@ -55,15 +71,20 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    let imageUrl = imagePreview || "";
 
-    // Upload image if changed
-    if (image) {
-      const response = await uploadImage({
-        variables: { file: image },
-        context: { headers: { "Apollo-Require-Preflight": "true" } },
-      });
-      imageUrl = response.data.uploadImage;
+    const validImages = images.filter((img): img is File => img !== null);
+    let uploadedImageUrls: string[] = [];
+
+    if (validImages.length > 0) {
+      for (const file of validImages) {
+        const response = await uploadImage({
+          variables: { file },
+          context: { headers: { "Apollo-Require-Preflight": "true" } },
+        });
+        uploadedImageUrls.push(response.data.uploadImage);
+      }
+    } else {
+      uploadedImageUrls = noteToEdit?.imageUrls || [];
     }
 
     if (noteToEdit) {
@@ -72,21 +93,21 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
           _id: noteToEdit._id,
           title,
           note,
-          imageUrl,
+          imageUrls: uploadedImageUrls,
         },
       });
       onFinishEdit?.();
     } else {
       await addNote({
-        variables: { title, note, imageUrl },
+        variables: { title, note, imageUrls: uploadedImageUrls },
       });
     }
 
     onAddNote();
     setTitle("");
     setNote("");
-    setImage(null);
-    setImagePreview(null);
+    setImages([null]);
+    setImagePreviews([]);
   };
 
   return (
@@ -108,20 +129,25 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
             required
           />
 
-          <label>Choose a picture to upload:</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            multiple={false}
-          />
+          <label>Choose picture(s) to upload:</label>
 
-          {imagePreview && (
-            <div className="image-preview">
-              <img src={imagePreview} alt="Preview" />
-              <button type="button" onClick={handleRemoveImage}>Remove Image</button>
+          {images.map((file, index) => (
+            <div key={index} className="image-preview" style={{ marginBottom: "10px" }}>
+              {imagePreviews[index] && (
+                <>
+                  <img src={imagePreviews[index]} alt={`Preview ${index}`} style={{ maxWidth: "100%" }} />
+                  <button type="button" onClick={() => handleRemoveImage(index)}>
+                    Remove
+                  </button>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageChange(e, index)}
+              />
             </div>
-          )}
+          ))}
 
           <input type="submit" value={noteToEdit ? "Save Changes" : "Post Story"} />
 
@@ -130,7 +156,11 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
               <button type="button" onClick={handleDelete} style={{ marginTop: "10px" }}>
                 Delete Note
               </button>
-              <button type="button" onClick={onFinishEdit} style={{ marginTop: "10px", marginLeft: "10px" }}>
+              <button
+                type="button"
+                onClick={onFinishEdit}
+                style={{ marginTop: "10px", marginLeft: "10px" }}
+              >
                 Cancel
               </button>
             </>

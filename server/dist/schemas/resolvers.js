@@ -59,9 +59,9 @@ const resolvers = {
             return { token, user: newUser };
         },
         //add a new note 
-        addNote: async (_, { title, note, imageUrl }, context) => {
-            console.log("saving note - Image URL:", imageUrl); // debugging 
-            const newNote = new Note({ title, note, imageUrl, userId: context.user._id });
+        addNote: async (_, { title, note, imageUrls }, context) => {
+            console.log("saving note - Image URL:", imageUrls); // debugging 
+            const newNote = new Note({ title, note, imageUrls, userId: context.user._id });
             await newNote.save();
             return newNote;
         },
@@ -85,8 +85,8 @@ const resolvers = {
             return result.deletedCount === 1;
         },
         //update a note 
-        updateNote: async (_, { _id, title, note, imageUrl }, context) => {
-            const updatedNote = await Note.findOneAndUpdate({ _id, userId: context.user._id }, { title, note, imageUrl }, { new: true });
+        updateNote: async (_, { _id, title, note, imageUrls }, context) => {
+            const updatedNote = await Note.findOneAndUpdate({ _id, userId: context.user._id }, { title, note, imageUrls }, { new: true });
             return updatedNote;
         },
     }

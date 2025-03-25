@@ -34,7 +34,7 @@ export default function Home() {
                         key={note._id}
                         title={note.title}
                         note={note.story}
-                        imageUrl={note.imageUrl}
+                        imageUrls={note.imageUrls}
                         username={note.username}
                     />
                 ))}

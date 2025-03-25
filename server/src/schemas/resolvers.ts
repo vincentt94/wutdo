@@ -16,7 +16,7 @@ interface AddUserArgs {
 interface AddNoteArgs {
     title: string,
     note: string,
-    imageUrl: string
+    imageUrls: [string]
 }
 
 interface LoginArgs {
@@ -94,9 +94,9 @@ const resolvers = {
             return { token, user: newUser };
         },
         //add a new note 
-        addNote: async (_: unknown, { title, note, imageUrl }: AddNoteArgs, context: any) => {
-            console.log("saving note - Image URL:", imageUrl ) // debugging 
-            const newNote = new Note({ title, note, imageUrl, userId: context.user._id });
+        addNote: async (_: unknown, { title, note, imageUrls }: AddNoteArgs, context: any) => {
+            console.log("saving note - Image URL:", imageUrls ) // debugging 
+            const newNote = new Note({ title, note, imageUrls, userId: context.user._id });
             await newNote.save();
             return newNote;
         },
@@ -125,10 +125,10 @@ const resolvers = {
             return result.deletedCount === 1;
           },
           //update a note 
-          updateNote: async (_: unknown, { _id, title, note, imageUrl }: any, context: any) => {
+          updateNote: async (_: unknown, { _id, title, note, imageUrls }: any, context: any) => {
             const updatedNote = await Note.findOneAndUpdate(
               { _id, userId: context.user._id },
-              { title, note, imageUrl },
+              { title, note, imageUrls },
               { new: true }
             );
             return updatedNote;

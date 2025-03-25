@@ -13,12 +13,13 @@ export const GET_NOTES = gql`
 `;
 
 export const USER_NOTES = gql`
-    query GetUserNotes {
-        getUserNotes {
-            _id
-            note
-            title
-            imageUrl
-        }
+  query GetUserNotes {
+    getUserNotes {
+      _id
+      title
+      note
+      imageUrls
+      username
     }
-`
+  }
+`;
