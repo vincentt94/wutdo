@@ -18,49 +18,48 @@ interface CreateNoteProps {
 export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: CreateNoteProps) {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
-  const [images, setImages] = useState<(File | null)[]>([null]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
 
   const [uploadImage] = useMutation(UPLOAD_IMAGE);
   const [addNote] = useMutation(ADD_NOTE);
   const [updateNote] = useMutation(UPDATE_NOTE);
   const [deleteNote] = useMutation(DELETE_NOTE);
 
+  // Pre-fill form if editing
   useEffect(() => {
     if (noteToEdit) {
       setTitle(noteToEdit.title);
       setNote(noteToEdit.note);
-      setImagePreviews(noteToEdit.imageUrls || []);
-      setImages(noteToEdit.imageUrls?.map(() => null) || [null]);
+      setExistingImages(noteToEdit.imageUrls || []);
     }
   }, [noteToEdit]);
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const updatedImages = [...images];
-    updatedImages[index] = file;
-
-    const updatedPreviews = [...imagePreviews];
-    updatedPreviews[index] = URL.createObjectURL(file);
-
-    // Add a new empty field only if it's the last one
-    if (index === images.length - 1) {
-      updatedImages.push(null);
-    }
-
-    setImages(updatedImages);
-    setImagePreviews(updatedPreviews);
+  // Handle file input
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setNewImages(prev => [...prev, ...files]);
+    const previews = files.map(file => URL.createObjectURL(file));
+    setNewImagePreviews(prev => [...prev, ...previews]);
   };
 
-  const handleRemoveImage = (index: number) => {
-    const updatedImages = images.filter((_, i) => i !== index);
-    const updatedPreviews = imagePreviews.filter((_, i) => i !== index);
-    setImages(updatedImages);
-    setImagePreviews(updatedPreviews);
+  // Remove a newly added image
+  const handleRemoveNewImage = (index: number) => {
+    const updatedImages = [...newImages];
+    const updatedPreviews = [...newImagePreviews];
+    updatedImages.splice(index, 1);
+    updatedPreviews.splice(index, 1);
+    setNewImages(updatedImages);
+    setNewImagePreviews(updatedPreviews);
   };
 
+  // Remove an existing image from noteToEdit
+  const handleRemoveExistingImage = (url: string) => {
+    setExistingImages(prev => prev.filter(img => img !== url));
+  };
+
+  // Delete note
   const handleDelete = async () => {
     if (noteToEdit && confirm("Are you sure you want to delete this note?")) {
       await deleteNote({ variables: { id: noteToEdit._id } });
@@ -69,23 +68,21 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
     }
   };
 
+  // Submit (Create or Update)
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const validImages = images.filter((img): img is File => img !== null);
-    let uploadedImageUrls: string[] = [];
+    let uploadedUrls: string[] = [];
 
-    if (validImages.length > 0) {
-      for (const file of validImages) {
-        const response = await uploadImage({
-          variables: { file },
-          context: { headers: { "Apollo-Require-Preflight": "true" } },
-        });
-        uploadedImageUrls.push(response.data.uploadImage);
-      }
-    } else {
-      uploadedImageUrls = noteToEdit?.imageUrls || [];
+    for (const file of newImages) {
+      const { data } = await uploadImage({
+        variables: { file },
+        context: { headers: { "Apollo-Require-Preflight": "true" } },
+      });
+      uploadedUrls.push(data.uploadImage);
     }
+
+    const finalImageUrls = [...existingImages, ...uploadedUrls];
 
     if (noteToEdit) {
       await updateNote({
@@ -93,21 +90,26 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
           _id: noteToEdit._id,
           title,
           note,
-          imageUrls: uploadedImageUrls,
+          imageUrls: finalImageUrls,
         },
       });
       onFinishEdit?.();
     } else {
       await addNote({
-        variables: { title, note, imageUrls: uploadedImageUrls },
+        variables: {
+          title,
+          note,
+          imageUrls: finalImageUrls,
+        },
       });
     }
 
     onAddNote();
     setTitle("");
     setNote("");
-    setImages([null]);
-    setImagePreviews([]);
+    setNewImages([]);
+    setNewImagePreviews([]);
+    setExistingImages([]);
   };
 
   return (
@@ -130,24 +132,42 @@ export default function CreateNote({ onAddNote, noteToEdit, onFinishEdit }: Crea
           />
 
           <label>Choose picture(s) to upload:</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            multiple
+          />
 
-          {images.map((file, index) => (
-            <div key={index} className="image-preview" style={{ marginBottom: "10px" }}>
-              {imagePreviews[index] && (
-                <>
-                  <img src={imagePreviews[index]} alt={`Preview ${index}`} style={{ maxWidth: "100%" }} />
-                  <button type="button" onClick={() => handleRemoveImage(index)}>
+          {/* Existing Images (in edit mode) */}
+          {existingImages.length > 0 && (
+            <div className="image-preview">
+              <h4>Current Images:</h4>
+              {existingImages.map((url, index) => (
+                <div key={index} style={{ position: "relative" }}>
+                  <img src={url} alt={`Existing ${index}`} style={{ maxWidth: "100%" }} />
+                  <button type="button" onClick={() => handleRemoveExistingImage(url)}>
                     Remove
                   </button>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageChange(e, index)}
-              />
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* New Images */}
+          {newImagePreviews.length > 0 && (
+            <div className="image-preview">
+              <h4>New Uploads:</h4>
+              {newImagePreviews.map((url, index) => (
+                <div key={index} style={{ position: "relative" }}>
+                  <img src={url} alt={`Preview ${index}`} style={{ maxWidth: "100%" }} />
+                  <button type="button" onClick={() => handleRemoveNewImage(index)}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <input type="submit" value={noteToEdit ? "Save Changes" : "Post Story"} />
 
