@@ -55,6 +55,12 @@ const resolvers = {
         getUsers: async () => {
             return await User.find().sort({ createdAt: -1 });
         },
+
+        getNoteById: async (_: unknown, { id }: { id: string }, context: any) => {
+            const note = await Note.findOne({ _id: id, userId: context.user._id });
+            return note;
+          },
+        
     },
     
     Upload: GraphQLUpload,

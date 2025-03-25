@@ -1,23 +1,25 @@
 import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
-import dotenv from 'dotenv';
-dotenv.config();
-export const authenticateToken = ({ req }) => {
+export const authenticateToken = async ({ req }) => {
     let token = req.body.token || req.query.token || req.headers.authorization;
+    let user = null;
     if (req.headers.authorization) {
         token = token.split(' ').pop().trim();
     }
     if (!token) {
-        return req;
+        return { user: null };
     }
     try {
+        if (!process.env.JWT_SECRET_KEY) {
+            console.error(" JWT_SECRET_KEY is missing from environment variables.");
+        }
         const { data } = jwt.verify(token, process.env.JWT_SECRET_KEY || '', { maxAge: '2hr' });
-        req.user = data;
+        user = data;
     }
     catch (err) {
         console.log('Invalid token');
     }
-    return req;
+    return { user };
 };
 export const signToken = (username, _id) => {
     const payload = { username, _id };
