@@ -9,14 +9,15 @@
 
 /* Full screen container that centers everything */
 .login-container {
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-    width:100%;
-    height: calc(75vh - 100px);
-    margin: 0;
-    background-size: cover; 
-    padding-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: auto; /* Allow it to grow based on content */
+  margin: 0;
+  background-size: cover;
+  padding: 80px 20px 40px; /* Add top padding to avoid overlap */
+  box-sizing: border-box;
   }
   
   /* The box containing the login form */
@@ -25,8 +26,6 @@
     max-width: 400px;
     height:400px;
     text-align: center;
-    box-shadow: 0 4px 10px #AF7A38;
-    outline: 3px solid #AF7A38;
     border-radius: 5px;
     padding: 40px 30px;
     

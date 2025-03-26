@@ -46,7 +46,6 @@ header {
 .header-content {
   display: flex;
   align-items: center;
-
 }
 
 .header-content h1 {
@@ -65,6 +64,12 @@ header a {
 
 header a:hover {
   text-decoration: none;
+}
+
+.username-below {
+  color: var(--color-accent-light);
+  font-size: 16px;
+  font-style: italic;
 }
 
 #logoImg img {
@@ -112,14 +117,6 @@ footer p {
 /*___________________________________________END FOOTER___________________________________________*/
 
 
-
-.story-feed a {
-  text-decoration: none;
-}
-
-.story-feed a button:hover {
-  background-color: var(--color-accent-light);
-}
 
 /*___________________________________________CREATE STORY___________________________________________*/
 .create-story-container {
@@ -263,14 +260,77 @@ footer p {
   margin-bottom: 25px;
 }
 
-.story-feed {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 25px;
-  width: 90%;
-  max-width: 1200px;
-  padding: 0px;
+.home-subtext {
+  font-size: 20px;
+  margin-bottom: 30px;
+  color: var(--color-accent-dark);
+  text-align: center;
 }
+
+.about-box {
+  background: rgba(255, 255, 255, 0.6);
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(3px);
+}
+
+.about-box2 {
+  background: transparent;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+  backdrop-filter: blur(3px);
+}
+
+.about-box h2 {
+  margin-top: 25px;
+  color: var(--color-accent-dark);
+}
+
+.about-box p, .about-box li {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.about-box ul {
+  padding-left: 20px;
+  list-style: none;
+}
+
+.about-box ul li::before {
+  content: "• ";
+  color: var(--color-accent-dark);
+  font-weight: bold;
+}
+
+.home-cta {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.cta-button {
+  display: inline-block;
+  background: var(--color-accent-dark);
+  color: black;
+  padding: 10px 20px;
+  margin: 10px;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.cta-button:hover {
+  background: var(--color-accent-medium);
+}
+
 
 .journal-card {
   background: transparent;
