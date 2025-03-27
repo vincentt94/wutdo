@@ -1,6 +1,8 @@
 const typeDefs = `
     scalar Upload
     
+    
+
     type Note {
         _id: ID!
         title: String!
