@@ -27,55 +27,34 @@ const Header = () => {
 
   return (
     <header>
-      <div>
-
-        <div className="header-content">
-          <Link to="/" id="logoImg">
-            { /*
-                <img src={logo} alt="Travel Journal Logo"/>
-             */}
-          </Link>
-          <Link to="/">
-            <h1>Wutdo</h1>
-          </Link>
-        </div>
+      <div className="header-content">
+        <Link to="/" id="logoImg">
+          {/* Optional logo image here */}
+        </Link>
+        <Link to="/">
+          <h1>Wutdo</h1>
+        </Link>
       </div>
-
-      <div>
-        {/* Checking if the user is logged in to conditionally render profile link and logout button */}
+  
+      {/* Nav Links & User Info */}
+      <div className="header-nav">
         {Auth.loggedIn() ? (
           <>
-            <Link to="/">
             {username && (
-              <span style={{ color: "var(--color-creamy-white)", fontSize: "20px", marginRight: "20px" }}>
+              <span className="username-below">
                 Welcome {username}
               </span>
             )}
-            </Link>
-            <Link to="/mynotes">
-              My Notes
-            </Link>
-            <Link to="/createnote">
-              Create Note
-            </Link>
+            <Link to="/mynotes">My Notes</Link>
+            <Link to="/createnote">Create Note</Link>
             <button id="logoutButton" onClick={logout}>
               Logout
             </button>
-
-
-
           </>
         ) : (
           <>
-            <Link to="/login">
-              Login&nbsp;
-            </Link>
-
-            <Link to="/signup">
-              Signup&nbsp;
-            </Link>
-
-
+            <Link to="/login">Login</Link>
+            <Link to="/signup">Signup</Link>
           </>
         )}
       </div>

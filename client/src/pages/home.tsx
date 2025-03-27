@@ -23,13 +23,13 @@ export default function Home() {
   // Logged-in user homepage content
   return (
     <div className="home-container">
-      <h1>Welcome to Wutdo</h1>
+      <h1>Welcome to Wutdonow?</h1>
       <p className="home-subtext">
         Your personal space to document thoughts, stories, and ideas — privately or shared with others.
       </p>
 
       <div className="about-box">
-        <h2>What is Wutdo?</h2>
+        <h2>What is Wutdonow?</h2>
         <p>
           Wutdo is your modern journaling companion — whether you're jotting down creative ideas,
           logging your daily mood, or saving images that inspire you.
