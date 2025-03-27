@@ -72,3 +72,31 @@
     text-decoration: underline;
   }
   
+
+  @media (max-width: 768px) {
+    .login-box,
+    .signup-box {
+      padding: 20px;
+      height: auto;
+    }
+  
+    .login-box h2,
+    .signup-box h2 {
+      font-size: 32px;
+    }
+  
+    .input-field {
+      font-size: 14px;
+    }
+  
+    .login-button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+    }
+  
+    .register-link {
+      font-size: 16px;
+    }
+  }
+  
