@@ -333,20 +333,25 @@ footer p {
 
 
 .journal-card {
-  background: transparent;
-  /* semi-transparent */
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease-in-out, background-color 0.3s;
   backdrop-filter: blur(5px);
-  /* adds a soft background blur */
+  height: 400px; /* fixed height */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .journal-card:hover {
   transform: translateY(-5px);
   background: rgba(231, 214, 214, 0.9);
 }
+
+
 
 .create-story-button {
   padding: 12px 24px;
@@ -425,7 +430,7 @@ h3 {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 10001;
   cursor: pointer;
 }
 
@@ -445,4 +450,96 @@ h3 {
   cursor: default;
   position: relative;
   z-index: 1001;
+}
+
+/*___________________________________________JournalCard / Size of Note Card___________________________________________*/
+
+
+.fixed-note-card {
+  height: 400px;
+  width: 100%;
+  max-width: 300px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease-in-out;
+  backdrop-filter: blur(5px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.note-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.note-modal-content {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 40px 30px;
+  border-radius: 12px;
+  max-width: 700px;
+  width: 90%;
+  text-align: center;
+  color: var(--color-creamy-white);
+  position: relative;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+.modal-note-title {
+  font-size: 32px;
+  color: var(--color-accent-light);
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.modal-note-text {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #fdfdfd;
+  margin-bottom: 30px;
+  white-space: pre-wrap;
+}
+
+.modal-images-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.modal-thumbnail {
+  max-width: 150px;
+  height: auto;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 2px solid var(--color-accent-dark);
+  transition: transform 0.2s ease;
+}
+
+.modal-thumbnail:hover {
+  transform: scale(1.05);
+}
+
+.note-modal-close-button {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 36px;
+  color: #fff;
+  cursor: pointer;
 }
