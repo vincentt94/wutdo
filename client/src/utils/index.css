@@ -541,7 +541,7 @@ h3 {
   right: 18px;
   background: none;
   border: none;
-  font-size: 36px;
+  font-size: 20px;
   color: #fff;
   cursor: pointer;
 }
@@ -597,6 +597,12 @@ h3 {
   #logoutButton {
     outline: none;
     box-shadow: none;
+  }
+
+  .note-modal-close-button {
+    font-size: 20px;
+    top: 8px;
+    right: 10px;
   }
 
   /* Shared Home Container */

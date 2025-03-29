@@ -32,7 +32,7 @@ const Header = () => {
           {/* Optional logo image here */}
         </Link>
         <Link to="/">
-          <h1>Wutdo</h1>
+          <h1>Wutdonow</h1>
         </Link>
       </div>
   
