@@ -23,7 +23,7 @@ export default function Home() {
   // Logged-in user homepage content
   return (
     <div className="home-container">
-      <h1>Welcome to Wutdonow?</h1>
+      <h1>Welcome to Wutdonow</h1>
       <p className="home-subtext">
         Your personal space to document thoughts, stories, and ideas — privately or shared with others.
       </p>
@@ -38,7 +38,7 @@ export default function Home() {
           You can create beautiful, image-rich notes, organize them, and access them anytime from anywhere.
         </p>
 
-        <h2>Why Wutdo?</h2>
+        <h2>Why Wutdonow?</h2>
         <ul>
           <li>✍️ Easy-to-use note creation and editing</li>
           <li>📸 Upload and manage your images per note</li>
